@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: chatdb
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+
+  backend:
+    build: .
+    command: npm start
+    ports:
+      - 5000:5000
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    command: npm start
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - backend
+      - frontend
